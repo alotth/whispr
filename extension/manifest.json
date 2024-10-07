@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Audio Streamer with AES Encryption",
+  "version": "1.0",
+  "permissions":["storage", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
