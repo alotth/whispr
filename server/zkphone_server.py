@@ -14,7 +14,7 @@ def message_received(client, server, message):
     print("Dados de áudio recebidos.")
 
 
-server = WebsocketServer(host='0.0.0.0', port=5000)
+server = WebsocketServer(host='0.0.0.0', port=3001)
 server.set_fn_new_client(new_client)
 server.set_fn_message_received(message_received)
 server.run_forever()

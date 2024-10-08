@@ -13,16 +13,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function startStreaming() {
   console.log("Starting streaming...");
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-
-  mediaRecorder.ondataavailable = async (event) => {
-    if (event.data.size > 0) {
-      const encryptedData = await encryptData(event.data);
-      sendDataToServer(encryptedData);
-    }
-  };
-
-  mediaRecorder.start(250); // Send data every 250ms
 }
 
 function stopStreaming() {
@@ -47,15 +37,6 @@ async function encryptData(audioBlob) {
     };
     reader.readAsArrayBuffer(audioBlob);
   });
-}
-
-function sendDataToServer(data) {
-  console.log("Sending data to server...");
-  // Aqui você deve implementar a lógica para enviar os dados criptografados para o seu servidor Python
-  if (!socket) {
-    socket = new WebSocket("ws://localhost:5000"); // Certifique-se de que o servidor esteja configurado para WebSockets
-  }
-  socket.send(data);
 }
 
 function aesEncrypt(data, key) {

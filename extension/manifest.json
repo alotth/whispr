@@ -1,15 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Audio Streamer with AES Encryption",
+  "name": "ZKPhone",
   "version": "1.0",
-  "permissions":["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html"
   },
-  "host_permissions": [
-    "<all_urls>"
-  ]
+  "host_permissions": ["<all_urls>"]
 }
