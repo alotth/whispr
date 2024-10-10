@@ -1,16 +1,3 @@
-#ZKPhone
+# Whispr - Web3 Audio Call
 
-Anonymous Call 
-
-
-
-(arquive)
-At macOS
-
-```bash
-brew install portaudio
-
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+Whispr is a web3 audio call platform built with Next.js, WebRTC, and Flask. It allows users to make secure and encrypted audio calls to each other.
