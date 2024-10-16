@@ -1,35 +1,91 @@
 "use client";
 
-import React, { createContext, useState, ReactNode, useContext } from "react";
-import SimplePeer from "simple-peer";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import Peer, { DataConnection, MediaConnection } from "peerjs";
 
 interface PeerContextType {
-  peers: SimplePeer.Instance[];
-  addPeer: (peer: SimplePeer.Instance) => void;
+  peer: Peer | null;
+  connections: DataConnection[];
+  mediaConnections: MediaConnection[];
+  remoteStreams: MediaStream[];
 }
 
-export const PeerContext = createContext<PeerContextType | undefined>(undefined);
+const PeerContext = createContext<PeerContextType | undefined>(undefined);
 
-export const PeerProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [peers, setPeers] = useState<SimplePeer.Instance[]>([]);
+interface PeerProviderProps {
+  children: ReactNode;
+}
 
-  const addPeer = (peer: SimplePeer.Instance) => {
-    setPeers(prevPeers => [...prevPeers, peer]);
-  };
+export const PeerProvider: React.FC<PeerProviderProps> = ({ children }) => {
+  const [peer, setPeer] = useState<Peer | null>(null);
+  const [connections, setConnections] = useState<DataConnection[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [mediaConnections, setMediaConnections] = useState<MediaConnection[]>(
+    []
+  );
+  const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
+
+  useEffect(() => {
+    //const walletAddress = obterEnderecoCarteira(); // Implemente essa função conforme necessário
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    const newPeer = new Peer(undefined, {
+      host: "https://9000-peers-peerjsserver-q6xgn89im2s.ws-us116.gitpod.io",
+      secure: true,
+      port: 443,
+    });
+
+    setPeer(newPeer);
+
+    newPeer.on("open", (id: string) => {
+      console.log("Meu ID Peer:", id);
+    });
+
+    newPeer.on("connection", (conn: DataConnection) => {
+      setConnections((prev) => [...prev, conn]);
+
+      conn.on("data", (data: unknown) => {
+        console.log("Dados recebidos:", data);
+      });
+    });
+
+    newPeer.on("call", (call: MediaConnection) => {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream: MediaStream) => {
+          call.answer(stream);
+          call.on("stream", (remoteStream: MediaStream) => {
+            setRemoteStreams((prev) => [...prev, remoteStream]);
+          });
+        })
+        .catch((err: Error) => console.error("Erro ao acessar áudio:", err));
+    });
+
+    return () => {
+      newPeer.destroy();
+    };
+  }, []);
 
   return (
-    <PeerContext.Provider value={{ peers, addPeer }}>
+    <PeerContext.Provider
+      value={{ peer, connections, mediaConnections, remoteStreams }}
+    >
       {children}
     </PeerContext.Provider>
   );
 };
 
-export const usePeer = () => {
+export const usePeer = (): PeerContextType => {
   const context = useContext(PeerContext);
   if (!context) {
-    throw new Error("usePeer must be used within a PeerProvider");
+    throw new Error("usePeer deve ser usado dentro de um PeerProvider");
   }
   return context;
 };
