@@ -11,6 +11,13 @@ export default function Home() {
   const peerInstance = useRef<Peer | null>(null);
 
   useEffect(() => {
+    //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //   // @ts-expect-error
+    //   const newPeer = new Peer(undefined, {
+    //     host: "https://9000-peers-peerjsserver-q6xgn89im2s.ws-us116.gitpod.io",
+    //     secure: true,
+    //     port: 443,
+    //   });
     const peer = new Peer();
 
     peer.on("open", (id) => {
@@ -72,7 +79,7 @@ export default function Home() {
   return (
     <div>
       <h1>Audio Streaming with PeerJS</h1>
-      <p>Seu ID Peer: {peerId}</p>
+      <p>Your Peer ID: {peerId}</p>
       <input
         type="text"
         placeholder="ID do Peer Remoto"
