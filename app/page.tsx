@@ -1,100 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Peer from "peerjs";
+import { usePeer } from "./context/PeerContext";
+import { useRouter } from "next/navigation";
+import { useNotification } from "./context/NotificationContext";
 
 export default function Home() {
-  const [peerId, setPeerId] = useState("");
-  const [remoteId, setRemoteId] = useState("");
-  const localAudioRef = useRef<HTMLAudioElement | null>(null);
-  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const peerInstance = useRef<Peer | null>(null);
+  const { peerId } = usePeer();
+  const { notify } = useNotification();
+  const router = useRouter();
 
-  useEffect(() => {
-    //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //   // @ts-expect-error
-    //   const newPeer = new Peer(undefined, {
-    //     host: "https://9000-peers-peerjsserver-q6xgn89im2s.ws-us116.gitpod.io",
-    //     secure: true,
-    //     port: 443,
-    //   });
-    const peer = new Peer();
-
-    peer.on("open", (id) => {
-      setPeerId(id);
-    });
-
-    peer.on("call", (call) => {
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          call.answer(stream);
-          call.on("stream", (remoteStream) => {
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = remoteStream;
-              remoteAudioRef.current
-                .play()
-                .catch((e) => console.error("Error playing remote audio:", e));
-            }
-          });
-        })
-        .catch((err) => console.error("Error accessing audio:", err));
-    });
-
-    peerInstance.current = peer;
-
-    return () => peer.destroy();
-  }, []);
-
-  const callPeer = () => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        if (localAudioRef.current) {
-          localAudioRef.current.srcObject = stream;
-          localAudioRef.current
-            .play()
-            .catch((e) => console.error("Error playing local audio:", e));
-        }
-
-        const call = peerInstance.current?.call(remoteId, stream);
-        if (call) {
-          call.on("stream", (remoteStream) => {
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = remoteStream;
-              remoteAudioRef.current
-                .play()
-                .catch((e) => console.error("Error playing remote audio:", e));
-            } else {
-              console.error("Remote audio element not initialized");
-            }
-          });
-        } else {
-          console.error("Failed to create call");
-        }
-      })
-      .catch((err) => console.error("Error accessing audio:", err));
+  const createRoom = () => {
+    const roomUrl = `${window.location.origin}/room/${peerId}`;
+    navigator.clipboard.writeText(roomUrl);
+    notify("Room URL copied to clipboard");
+    router.push(`/room/${peerId}`);
   };
 
   return (
-    <div>
-      <h1>Audio Streaming with PeerJS</h1>
-      <p>Your Peer ID: {peerId}</p>
-      <input
-        type="text"
-        placeholder="ID do Peer Remoto"
-        value={remoteId}
-        onChange={(e) => setRemoteId(e.target.value)}
-      />
-      <button onClick={callPeer}>Call Peer</button>
-      <div>
-        <h2>Local</h2>
-        <audio ref={localAudioRef} controls />
-      </div>
-      <div>
-        <h2>Remoto</h2>
-        <audio ref={remoteAudioRef} controls />
-      </div>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-[60px] font-bold">Whispr</h1>
+      <h2 className="text-sm">Anonimous Audio Streaming</h2>
+      <br />
+      <br />
+      {/* <p className="text-lg">Your Peer ID: {peerId}</p> */}
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={createRoom}
+      >
+        Create Room
+      </button>
     </div>
   );
 }
